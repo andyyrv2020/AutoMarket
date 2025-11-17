@@ -1,0 +1,138 @@
+@model CarListingDetailViewModel
+@{
+    ViewData["Title"] = $"{Model.Listing.Brand} {Model.Listing.Model}";
+}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card-modern p-3">
+            <div class="skeleton rounded-3 mb-3">
+                <img src="@Model.Listing.ImageUrl" class="card-img-top" alt="@Model.Listing.Brand @Model.Listing.Model" />
+            </div>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <p class="text-muted mb-1">@Model.Listing.City</p>
+                    <h2 class="h4 fw-bold">@Model.Listing.Brand @Model.Listing.Model</h2>
+                    <p class="text-muted small">Posted @Model.Listing.CreatedAt.ToShortDateString()</p>
+                </div>
+                <div class="text-end">
+                    <div class="price-tag">€@Model.Listing.Price.ToString("N0")</div>
+                    <span class="badge-soft px-3">@Model.Listing.Year</span>
+                </div>
+            </div>
+            <div class="d-flex gap-2 flex-wrap mb-3">
+                <span class="stat-pill"><i class="fa-solid fa-gauge-high me-2"></i>@Model.Listing.HorsePower hp</span>
+                <span class="stat-pill"><i class="fa-solid fa-road me-2"></i>@Model.Listing.Mileage.ToString("N0") km</span>
+                <span class="stat-pill"><i class="fa-solid fa-gas-pump me-2"></i>@Model.Listing.FuelType</span>
+                <span class="stat-pill"><i class="fa-solid fa-gear me-2"></i>@Model.Listing.Transmission</span>
+            </div>
+
+            <ul class="nav nav-pills tab-modern mb-3" id="detailsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">Info</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="specs-tab" data-bs-toggle="tab" data-bs-target="#specs" type="button" role="tab">Specs</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="ai-tab" data-bs-toggle="tab" data-bs-target="#ai" type="button" role="tab">AI Estimate</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="seller-tab" data-bs-toggle="tab" data-bs-target="#seller" type="button" role="tab">Seller</button>
+                </li>
+            </ul>
+            <div class="tab-content" id="detailsTabsContent">
+                <div class="tab-pane fade show active" id="info" role="tabpanel">
+                    <p class="text-muted">@Model.Listing.Description</p>
+                </div>
+                <div class="tab-pane fade" id="specs" role="tabpanel">
+                    <div class="row g-3">
+                        <div class="col-sm-6">
+                            <div class="card-modern p-3">
+                                <p class="text-muted small mb-1">Engine</p>
+                                <div class="fw-semibold">@Model.Listing.EngineType</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="card-modern p-3">
+                                <p class="text-muted small mb-1">Transmission</p>
+                                <div class="fw-semibold">@Model.Listing.Transmission</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="card-modern p-3">
+                                <p class="text-muted small mb-1">Fuel type</p>
+                                <div class="fw-semibold">@Model.Listing.FuelType</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="card-modern p-3">
+                                <p class="text-muted small mb-1">Created</p>
+                                <div class="fw-semibold">@Model.Listing.CreatedAt.ToShortDateString()</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="ai" role="tabpanel">
+                    @if (Model.Estimation != null)
+                    {
+                        <div class="card-modern p-3">
+                            <p class="text-muted small">AI estimated price based on similar listings, mileage and horsepower.</p>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <div class="h4 mb-0">€@Model.Estimation.EstimatedPrice.ToString("N0")</div>
+                                    <small class="text-muted">Confidence @((int)(Model.Estimation.ConfidenceLevel * 100))%</small>
+                                </div>
+                                <span class="badge badge-gradient">@Model.Estimation.ComparedListingsCount listings compared</span>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Estimation not available.</p>
+                    }
+                </div>
+                <div class="tab-pane fade" id="seller" role="tabpanel">
+                    <p class="text-muted">Reach the seller via chat and schedule a test drive.</p>
+                    @if (Model.DealerLocation != null)
+                    {
+                        <div class="card-modern p-3">
+                            <p class="mb-1 fw-semibold">Dealer location</p>
+                            <p class="text-muted mb-0">@Model.DealerLocation.Address</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card-modern p-3 mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Live chat</h5>
+                <span class="badge-soft px-3">SignalR ready</span>
+            </div>
+            <div class="vstack gap-2">
+                @foreach (var msg in Model.RecentMessages)
+                {
+                    <div class="p-3 rounded-3" style="background: rgba(255,255,255,0.04);">
+                        <div class="d-flex justify-content-between">
+                            <strong>@msg.SenderId</strong>
+                            <small class="text-muted">@msg.Timestamp.ToShortTimeString()</small>
+                        </div>
+                        <p class="mb-0 text-muted">@msg.Message</p>
+                    </div>
+                }
+            </div>
+            <button class="btn btn-primary w-100 mt-3"><i class="fa-regular fa-paper-plane me-2"></i>Open chat modal</button>
+        </div>
+        <div class="card-modern p-3">
+            <h5 class="mb-2">Map preview</h5>
+            <p class="text-muted small">Dealer coordinates are ready for Leaflet.</p>
+            <div class="skeleton rounded-3" style="height: 200px;"></div>
+            @if (Model.DealerLocation != null)
+            {
+                <p class="mt-2 text-muted"><i class="fa-solid fa-location-dot me-2"></i>@Model.DealerLocation.Address</p>
+            }
+        </div>
+    </div>
+</div>
