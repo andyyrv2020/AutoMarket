@@ -1,0 +1,111 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <p class="text-muted mb-1">Market intelligence</p>
+        <h1 class="h4 fw-bold">Analytics Dashboard</h1>
+    </div>
+    <a class="btn btn-outline-accent" asp-controller="CarListing" asp-action="Index"><i class="fa-solid fa-car me-2"></i>Listings</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card-modern p-3 chart-card">
+            <div class="d-flex justify-content-between">
+                <h5 class="mb-0">Average price per brand</h5>
+                <span class="badge-soft px-3">Chart.js</span>
+            </div>
+            <canvas id="brandChart"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card-modern p-3 chart-card">
+            <div class="d-flex justify-content-between">
+                <h5 class="mb-0">Active sellers</h5>
+                <span class="badge-soft px-3">Realtime ready</span>
+            </div>
+            <canvas id="sellerChart"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card-modern p-3 chart-card">
+            <div class="d-flex justify-content-between">
+                <h5 class="mb-0">Listings per year</h5>
+                <span class="badge-soft px-3">Trends</span>
+            </div>
+            <canvas id="yearChart"></canvas>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card-modern p-3 chart-card">
+            <div class="d-flex justify-content-between">
+                <h5 class="mb-0">Real vs AI price</h5>
+                <span class="badge-soft px-3">AI estimator</span>
+            </div>
+            <canvas id="aiChart"></canvas>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const brandCtx = document.getElementById('brandChart');
+        new Chart(brandCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AveragePricePerBrand.Select(a => a.Brand))),
+                datasets: [{
+                    label: 'Avg €',
+                    backgroundColor: '#2B6CB0',
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.AveragePricePerBrand.Select(a => a.AveragePrice)))
+                }]
+            },
+            options: { plugins: { legend: { display: false }}} 
+        });
+
+        const sellerCtx = document.getElementById('sellerChart');
+        new Chart(sellerCtx, {
+            type: 'doughnut',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ActiveSellers.Select(a => a.Seller))),
+                datasets: [{
+                    label: 'Listings',
+                    backgroundColor: ['#2B6CB0', '#F6AD55', '#38bdf8', '#7c3aed'],
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ActiveSellers.Select(a => a.Listings)))
+                }]
+            }
+        });
+
+        const yearCtx = document.getElementById('yearChart');
+        new Chart(yearCtx, {
+            type: 'line',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ListingsPerYear.Select(y => y.Year))),
+                datasets: [{
+                    label: 'Listings',
+                    backgroundColor: '#2B6CB0',
+                    borderColor: '#2B6CB0',
+                    fill: true,
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ListingsPerYear.Select(y => y.Count)))
+                }]
+            }
+        });
+
+        const aiCtx = document.getElementById('aiChart');
+        new Chart(aiCtx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RealVsAi.Select(x => x.Model))),
+                datasets: [
+                    { label: 'Listed', backgroundColor: '#F6AD55', data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RealVsAi.Select(x => x.RealPrice))) },
+                    { label: 'AI', backgroundColor: '#2B6CB0', data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.RealVsAi.Select(x => x.EstimatedPrice))) }
+                ]
+            },
+            options: { responsive: true }
+        });
+    </script>
+}

@@ -1,8 +1,120 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="hero mb-4">
+    <div class="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-4">
+        <div>
+            <span class="badge text-uppercase fw-semibold">AI Powered Marketplace</span>
+            <h1 class="display-5 fw-bold mt-3">Sell and discover premium cars with <span class="text-accent">AutoMarket AI</span></h1>
+            <p class="lead text-dark">Smart pricing, immersive listings, live chat и интерактивна карта на дилърите.</p>
+            <div class="d-flex gap-3 flex-wrap">
+                <a class="btn btn-dark btn-lg" asp-controller="CarListing" asp-action="Index">Browse Listings</a>
+                <a class="btn btn-outline-dark btn-lg" asp-controller="Dashboard" asp-action="Index">View Dashboard</a>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-3 justify-content-end">
+            <div class="card-modern p-3" style="width: 280px;">
+                <p class="text-muted mb-1">Average AI confidence</p>
+                <div class="h3 fw-bold">92% <span class="text-accent">accuracy</span></div>
+                <p class="small text-muted">Based on recent 50+ listings</p>
+            </div>
+            <div class="card-modern p-3" style="width: 280px;">
+                <p class="text-muted mb-1">Instant estimate</p>
+                <div class="h3 fw-bold">&lt; 2s</div>
+                <p class="small text-muted">AI offers pricing in real time.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="mb-4">
+    <div class="card-modern p-4">
+        <form class="row g-3" method="get" asp-controller="CarListing" asp-action="Index">
+            <div class="col-md-5">
+                <label class="form-label text-muted">Brand</label>
+                <input type="text" name="brand" class="form-control" placeholder="Tesla, BMW, Toyota" />
+            </div>
+            <div class="col-md-5">
+                <label class="form-label text-muted">City</label>
+                <input type="text" name="city" class="form-control" placeholder="Sofia, Plovdiv" />
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-primary w-100">Search</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 fw-bold mb-0">Featured cars</h2>
+        <a asp-controller="CarListing" asp-action="Index" class="link-underline">See all</a>
+    </div>
+    <div class="grid-responsive">
+        @foreach (var car in Model.Featured)
+        {
+            var estimation = Model.Estimations.GetValueOrDefault(car.Id);
+            <div class="card-modern p-3">
+                <div class="skeleton rounded-3 mb-3">
+                    <img src="@car.ImageUrl" alt="@car.Brand @car.Model" class="card-img-top" />
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="mb-0">@car.Brand @car.Model</h5>
+                    <span class="badge-soft px-3 py-1">@car.Year</span>
+                </div>
+                <p class="price-tag">€@car.Price.ToString("N0")</p>
+                <p class="text-muted small">@car.City • @car.Mileage.ToString("N0") km • @car.FuelType</p>
+                @if (estimation != null)
+                {
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <span class="badge badge-gradient">AI: €@estimation.EstimatedPrice.ToString("N0")</span>
+                        <span class="text-muted small">Conf. @((int)(estimation.ConfidenceLevel * 100))%</span>
+                    </div>
+                }
+                <div class="d-flex justify-content-between">
+                    <span class="stat-pill"><i class="fa-solid fa-gauge-high me-2"></i>@car.HorsePower hp</span>
+                    <a class="btn btn-accent" asp-controller="CarListing" asp-action="Details" asp-route-id="@car.Id">Details</a>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<section class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h4 fw-bold mb-0">Latest listings</h2>
+        <span class="text-muted">AI estimates, chat &amp; favorites ready</span>
+    </div>
+    <div class="grid-responsive">
+        @foreach (var car in Model.Latest)
+        {
+            <div class="card-modern p-3">
+                <div class="position-relative mb-3">
+                    <div class="skeleton rounded-3">
+                        <img src="@car.ImageUrl" class="card-img-top" alt="@car.Brand @car.Model" />
+                    </div>
+                    <span class="badge position-absolute top-0 start-0 m-2 badge-soft">@car.City</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <div>
+                        <h5 class="mb-0">@car.Brand @car.Model</h5>
+                        <small class="text-muted">@car.Year • @car.EngineType</small>
+                    </div>
+                    <span class="price-tag">€@car.Price.ToString("N0")</span>
+                </div>
+                <p class="text-muted small">@car.Description</p>
+                <div class="d-flex gap-2 flex-wrap mb-3">
+                    <span class="badge @((car.FuelType == "Electric") ? "badge-electric" : car.FuelType == "Hybrid" ? "badge-hybrid" : "badge-soft")">@car.FuelType</span>
+                    <span class="badge-soft px-3">@car.Transmission</span>
+                    <span class="badge-soft px-3">@car.Mileage.ToString("N0") km</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <a class="link-underline" asp-controller="CarListing" asp-action="Details" asp-route-id="@car.Id">View details</a>
+                    <button class="btn btn-outline-accent btn-sm" type="button"><i class="fa-regular fa-heart me-1"></i>Favorite</button>
+                </div>
+            </div>
+        }
+    </div>
+</section>

@@ -1,0 +1,35 @@
+@model MapViewModel
+@{
+    ViewData["Title"] = "Map";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <p class="text-muted mb-1">Dealer map</p>
+        <h1 class="h4 fw-bold">Interactive map</h1>
+    </div>
+    <a class="btn btn-outline-accent" asp-controller="CarListing" asp-action="Index">Back to listings</a>
+</div>
+
+<div class="card-modern p-3">
+    <div id="map" class="rounded-3" style="height: 420px;"></div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <script>
+        const map = L.map('map').setView([42.6977, 23.3219], 6.5);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
+
+        const listings = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Listings));
+        const dealers = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DealerLocations));
+
+        dealers.forEach(dl => {
+            const marker = L.marker([dl.Latitude, dl.Longitude]).addTo(map);
+            const cars = listings.filter(l => l.UserId === dl.UserId);
+            const html = `<div><strong>${dl.Address}</strong><br/>${cars.map(c => `${c.Brand} ${c.Model} - €${c.Price.toLocaleString()}`).join('<br/>')}</div>`;
+            marker.bindPopup(html);
+        });
+    </script>
+}

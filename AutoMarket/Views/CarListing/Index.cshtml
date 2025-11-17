@@ -1,0 +1,64 @@
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Listings";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <p class="text-muted mb-1">Explore premium inventory</p>
+        <h1 class="h3 fw-bold">Car Listings</h1>
+    </div>
+    <a class="btn btn-accent" asp-controller="Dashboard" asp-action="Index"><i class="fa-solid fa-chart-pie me-2"></i>View Insights</a>
+</div>
+
+<div class="card-modern p-3 mb-4">
+    <form class="row g-3" method="get">
+        <div class="col-md-4">
+            <label class="form-label">Brand</label>
+            <input type="text" name="brand" class="form-control" placeholder="BMW, Tesla, Volvo" value="@Context.Request.Query["brand"]" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">City</label>
+            <input type="text" name="city" class="form-control" placeholder="Sofia" value="@Context.Request.Query["city"]" />
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button class="btn btn-primary w-100" type="submit"><i class="fa-solid fa-filter me-2"></i>Filter</button>
+        </div>
+    </form>
+</div>
+
+<div class="grid-responsive">
+    @foreach (var car in Model.Latest)
+    {
+        var estimation = Model.Estimations.GetValueOrDefault(car.Id);
+        <div class="card-modern p-3">
+            <div class="position-relative mb-3">
+                <div class="skeleton rounded-3">
+                    <img class="card-img-top" src="@car.ImageUrl" alt="@car.Brand @car.Model" />
+                </div>
+                <span class="badge position-absolute top-0 start-0 m-2 badge-soft">@car.City</span>
+                <span class="badge position-absolute top-0 end-0 m-2 badge-soft">@car.Year</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                    <h5 class="mb-0">@car.Brand @car.Model</h5>
+                    <small class="text-muted">@car.EngineType • @car.Transmission</small>
+                </div>
+                <span class="price-tag">€@car.Price.ToString("N0")</span>
+            </div>
+            <p class="text-muted small">@car.Description</p>
+            <div class="d-flex gap-2 flex-wrap mb-3">
+                <span class="badge-soft px-3">@car.Mileage.ToString("N0") km</span>
+                <span class="badge-soft px-3">@car.HorsePower hp</span>
+                <span class="badge-soft px-3">@car.FuelType</span>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+                @if (estimation != null)
+                {
+                    <span class="badge badge-gradient">AI €@estimation.EstimatedPrice.ToString("N0") • @((int)(estimation.ConfidenceLevel * 100))%</span>
+                }
+                <a class="btn btn-outline-accent" asp-action="Details" asp-route-id="@car.Id">Open</a>
+            </div>
+        </div>
+    }
+</div>
